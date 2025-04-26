@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Basic Chatbot</title>
+</head>
+<body>
+    <h1>Welcome to the Basic Chatbot!</h1>
+    <div id="chat-area">
+        </div>
+    <input type="text" id="user-input" placeholder="Type your message here...">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        function sendMessage() {
+            const input = document.getElementById('user-input');
+            const message = input.value;
+            // In a real chatbot, you'd send this message to your Python backend
+            // For this basic example, we'll just display it.
+            const chatArea = document.getElementById('chat-area');
+            chatArea.innerHTML += `<p>You: ${message}</p>`;
+            input.value = ''; // Clear the input
+        }
+    </script>
+</body>
+</html>
