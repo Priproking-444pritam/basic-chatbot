@@ -17,6 +17,9 @@
 
   if (!transcript || !form || !input) return;
 
+  const history = [];
+  let mode = "on-device";
+
   function renderMarkdownLite(text) {
     const escaped = text
       .replaceAll("&", "&amp;")
@@ -66,19 +69,25 @@
   }
 
   async function detectApi() {
+    const host = (typeof location !== "undefined" && location.hostname) || "";
+    if (host.endsWith("github.io")) {
+      mode = "on-device";
+      if (status) status.textContent = "On-device · replies in this tab";
+      return;
+    }
     try {
       const res = await fetch("api/health", { headers: { Accept: "application/json" } });
       const data = await res.json();
       if (res.ok && data && data.ok) {
         mode = "api";
-        status.textContent = "Live API · FastAPI";
+        if (status) status.textContent = "Live API · FastAPI";
         return;
       }
     } catch {
-      /* GitHub Pages / static host — use the in-browser brain */
+      /* static host — use the in-browser brain */
     }
     mode = "on-device";
-    status.textContent = "On-device · replies in this tab";
+    if (status) status.textContent = "On-device · replies in this tab";
   }
 
   async function ask(message) {
@@ -92,7 +101,6 @@
       return res.json();
     }
     if (!window.LumenEngine) throw new Error("engine");
-    if (!window.LumenEngine) throw new Error("engine");
     return window.LumenEngine.replyFor(message, sessionId);
   }
 
@@ -101,25 +109,31 @@
     if (!message) return;
     input.value = "";
     addMessage("user", message);
-    history.push({ role: "user", content: message });
-    typing(true);
     try {
+      history.push({ role: "user", content: message });
+      typing(true);
       const result = await ask(message);
       typing(false);
-      const reply = result && result.reply ? result.reply : "I heard you — try asking for help, a conversion, or an interview tip.";
+      const reply =
+        result && result.reply
+          ? result.reply
+          : "I heard you — try asking for help, a conversion, or an interview tip.";
       addMessage("assistant", reply);
       history.push({ role: "assistant", content: reply });
       if (history.length > 24) history.splice(0, history.length - 24);
       setChips((result && result.suggestions) || ["What can you do?", "hi", "12 * 8"]);
     } catch (err) {
       typing(false);
-      const fallback =
-        (window.LumenEngine && window.LumenEngine.replyFor(message, sessionId)) || {
-          reply: "Something glitched. Try “hi” or “what can you do?”",
-          suggestions: ["hi", "What can you do?"],
-        };
-      addMessage("assistant", fallback.reply);
-      setChips(fallback.suggestions || []);
+      let reply = "Something glitched. Try “hi” or “what can you do?”";
+      try {
+        if (window.LumenEngine) {
+          reply = window.LumenEngine.replyFor(message, sessionId).reply;
+        }
+      } catch {
+        /* keep fallback */
+      }
+      addMessage("assistant", reply);
+      setChips(["What can you do?", "Give me an interview tip", "How were you built?"]);
     }
   }
 
