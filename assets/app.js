@@ -6,11 +6,16 @@
   const status = document.getElementById("status");
   const SESSION_KEY = "lumen-session-id";
 
-  const sessionId = localStorage.getItem(SESSION_KEY) || crypto.randomUUID();
-  localStorage.setItem(SESSION_KEY, sessionId);
+  const sessionId =
+    localStorage.getItem(SESSION_KEY) ||
+    (crypto.randomUUID ? crypto.randomUUID() : `lumen-${Date.now()}`);
+  try {
+    localStorage.setItem(SESSION_KEY, sessionId);
+  } catch {
+    /* private mode */
+  }
 
-  const history = [];
-  let mode = "on-device";
+  if (!transcript || !form || !input) return;
 
   function renderMarkdownLite(text) {
     const escaped = text
@@ -62,22 +67,23 @@
 
   async function detectApi() {
     try {
-      const res = await fetch("/api/health", { headers: { Accept: "application/json" } });
-      if (res.ok) {
+      const res = await fetch("api/health", { headers: { Accept: "application/json" } });
+      const data = await res.json();
+      if (res.ok && data && data.ok) {
         mode = "api";
         status.textContent = "Live API · FastAPI";
         return;
       }
     } catch {
-      /* static host */
+      /* GitHub Pages / static host — use the in-browser brain */
     }
     mode = "on-device";
-    status.textContent = "On-device · GitHub Pages ready";
+    status.textContent = "On-device · replies in this tab";
   }
 
   async function ask(message) {
     if (mode === "api") {
-      const res = await fetch("/api/chat", {
+      const res = await fetch("api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message, session_id: sessionId, history }),
@@ -85,6 +91,8 @@
       if (!res.ok) throw new Error("api");
       return res.json();
     }
+    if (!window.LumenEngine) throw new Error("engine");
+    if (!window.LumenEngine) throw new Error("engine");
     return window.LumenEngine.replyFor(message, sessionId);
   }
 
@@ -98,13 +106,18 @@
     try {
       const result = await ask(message);
       typing(false);
-      addMessage("assistant", result.reply);
-      history.push({ role: "assistant", content: result.reply });
+      const reply = result && result.reply ? result.reply : "I heard you — try asking for help, a conversion, or an interview tip.";
+      addMessage("assistant", reply);
+      history.push({ role: "assistant", content: reply });
       if (history.length > 24) history.splice(0, history.length - 24);
-      setChips(result.suggestions || []);
-    } catch {
+      setChips((result && result.suggestions) || ["What can you do?", "hi", "12 * 8"]);
+    } catch (err) {
       typing(false);
-      const fallback = window.LumenEngine.replyFor(message, sessionId);
+      const fallback =
+        (window.LumenEngine && window.LumenEngine.replyFor(message, sessionId)) || {
+          reply: "Something glitched. Try “hi” or “what can you do?”",
+          suggestions: ["hi", "What can you do?"],
+        };
       addMessage("assistant", fallback.reply);
       setChips(fallback.suggestions || []);
     }
