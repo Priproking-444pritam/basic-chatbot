@@ -1,0 +1,16 @@
+{
+  "name": "Lumen",
+  "short_name": "Lumen",
+  "description": "A privacy-first conversational assistant you can ship as a website.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#07080c",
+  "theme_color": "#07080c",
+  "icons": [
+    {
+      "src": "assets/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

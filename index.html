@@ -1,25 +1,169 @@
 <!DOCTYPE html>
-<html>
-<head>
-    <title>Basic Chatbot</title>
-</head>
-<body>
-    <h1>Welcome to the Basic Chatbot!</h1>
-    <div id="chat-area">
-        </div>
-    <input type="text" id="user-input" placeholder="Type your message here...">
-    <button onclick="sendMessage()">Send</button>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Lumen — a private assistant you can actually ship</title>
+    <meta
+      name="description"
+      content="Lumen is a privacy-first conversational assistant with a production UI, a testable intent engine, and an optional FastAPI + LLM backend. Deploy the site on GitHub Pages in minutes."
+    />
+    <meta property="og:title" content="Lumen" />
+    <meta
+      property="og:description"
+      content="A modern chatbot portfolio piece: on-device engine, beautiful UI, FastAPI, Docker, tests."
+    />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#live">Skip to live demo</a>
+    <div class="wrap">
+      <header class="nav">
+        <a class="brand" href="#">
+          <img src="assets/favicon.svg" alt="" />
+          Lumen
+        </a>
+        <nav class="nav-links" aria-label="Primary">
+          <a href="#live">Live demo</a>
+          <a href="#features">Features</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#deploy">Deploy</a>
+          <a href="https://github.com/Priproking-444pritam/basic-chatbot">GitHub</a>
+        </nav>
+        <a class="btn btn-accent" href="#live">Open chat</a>
+      </header>
 
-    <script>
-        function sendMessage() {
-            const input = document.getElementById('user-input');
-            const message = input.value;
-            // In a real chatbot, you'd send this message to your Python backend
-            // For this basic example, we'll just display it.
-            const chatArea = document.getElementById('chat-area');
-            chatArea.innerHTML += `<p>You: ${message}</p>`;
-            input.value = ''; // Clear the input
-        }
-    </script>
-</body>
+      <section class="hero">
+        <div>
+          <p class="kicker"><span></span> Privacy-first · On-device · Interview-ready</p>
+          <h1>Software that talks back — without selling the conversation.</h1>
+          <p class="lede">
+            Lumen is a modern conversational product: a distinctive interface, a testable intent engine,
+            and an optional FastAPI layer for OpenAI-compatible models. Ship the website today. Add a
+            model when you need open-ended answers.
+          </p>
+          <div class="cta-row">
+            <a class="btn btn-accent" href="#live">Try the live demo</a>
+            <a class="btn btn-ghost" href="#deploy">Create the website</a>
+          </div>
+          <div class="hero-meta">
+            <div><strong>0 API keys</strong> to launch the site</div>
+            <div><strong>FastAPI + tests</strong> when you want a backend</div>
+            <div><strong>XSS-safe UI</strong> and accessible chat</div>
+          </div>
+        </div>
+
+        <aside class="chat-shell" id="live" aria-label="Lumen live demo">
+          <div class="chat-head">
+            <div>
+              <h2>Lumen</h2>
+              <p>Ask for math, conversions, interview prep, or how this is built.</p>
+            </div>
+            <div class="status" id="status">On-device</div>
+          </div>
+          <div id="transcript" class="transcript" role="log" aria-live="polite" aria-relevant="additions"></div>
+          <div id="chips" class="chips" aria-label="Suggestions"></div>
+          <form id="composer" class="composer">
+            <label class="visually-hidden" for="user-input" style="position:absolute;left:-9999px">Message</label>
+            <input id="user-input" name="message" autocomplete="off" placeholder="Ask Lumen anything practical…" maxlength="4000" />
+            <button class="btn btn-accent" type="submit">Send</button>
+          </form>
+        </aside>
+      </section>
+
+      <section class="section" id="features">
+        <h2>Built for 2026, not a tutorial from 2014.</h2>
+        <p class="intro">
+          Keyword chatbots dump “I don’t understand” on every real question. Lumen is a small product:
+          reliable tools, honest limits, a shippable website, and a path to LLMs that doesn’t brick the demo.
+        </p>
+        <div class="bento">
+          <article class="card wide">
+            <span class="tag">01 · Product</span>
+            <h3>A site interviewers can click</h3>
+            <p>
+              GitHub Pages hosts the full experience. The JavaScript engine is a sibling of the Python
+              engine, so the demo never depends on a sleeping free-tier server.
+            </p>
+          </article>
+          <article class="card wide">
+            <span class="tag">02 · Engine</span>
+            <h3>Intents you can unit test</h3>
+            <p>
+              Scored pattern matching plus safe math, unit conversion, session notes, interview coaching,
+              and crisis-safe wellbeing copy. No `eval()` of user code.
+            </p>
+          </article>
+          <article class="card tall">
+            <span class="tag">03 · API</span>
+            <h3>FastAPI when you need it</h3>
+            <p>Health, capabilities, CORS, Pydantic validation, optional LLM adapter.</p>
+          </article>
+          <article class="card tall">
+            <span class="tag">04 · Trust</span>
+            <h3>Privacy by default</h3>
+            <p>On-device first. Memory is per-session. LLM calls only if you set a key.</p>
+          </article>
+          <article class="card tall">
+            <span class="tag">05 · Craft</span>
+            <h3>UI that feels finished</h3>
+            <p>Typography, motion, chips, export, keyboard submit, reduced-motion support.</p>
+          </article>
+        </div>
+        <p style="margin-top: 18px">
+          <button class="btn btn-ghost" type="button" id="clear-chat">Clear thread</button>
+          <button class="btn btn-ghost" type="button" id="export-chat">Export transcript</button>
+        </p>
+      </section>
+
+      <section class="section" id="architecture">
+        <h2>Architecture you can defend in a loop.</h2>
+        <p class="intro">Client engine for the website. Server engine for production. Same behaviors, two runtimes.</p>
+        <pre class="arch" aria-label="Architecture diagram">
+browser  ──►  assets/engine.js   (GitHub Pages, zero ops)
+   │
+   └──►  POST /api/chat  ──►  app/engine.py  ──►  tools (math, units, time)
+                                   │
+                                   └── unknown + LLM_API_KEY ──► OpenAI-compatible API
+        </pre>
+      </section>
+
+      <section class="section" id="deploy">
+        <h2>Create the website in three moves.</h2>
+        <div class="steps">
+          <article class="step">
+            <p class="kicker">01</p>
+            <h3>GitHub Pages</h3>
+            <p>Settings → Pages → Deploy from branch <code>main</code> → folder <code>/</code>. Your site is live at <code>https://&lt;user&gt;.github.io/basic-chatbot/</code>.</p>
+          </article>
+          <article class="step">
+            <p class="kicker">02</p>
+            <h3>Optional API</h3>
+            <p><code>docker compose up --build</code> or <code>uvicorn app.main:app --reload</code>. Set <code>LLM_API_KEY</code> only if you want open-ended replies.</p>
+          </article>
+          <article class="step">
+            <p class="kicker">03</p>
+            <h3>Custom domain</h3>
+            <p>Add an <code>A</code>/<code>CNAME</code> in Pages. Keep the static demo even if the API is down — that’s the professional move.</p>
+          </article>
+        </div>
+      </section>
+
+      <footer>
+        <div>Lumen · evolved from a basic chatbot into a shippable assistant.</div>
+        <div>MIT License · Built to be shown, not just cloned.</div>
+      </footer>
+    </div>
+    <script src="assets/engine.js"></script>
+    <script src="assets/app.js"></script>
+  </body>
 </html>
