@@ -638,17 +638,17 @@ optional: FastAPI POST /api/chat → same engine + LLM fallback
           <article class="step">
             <p class="kicker">01</p>
             <h3>Merge onto main</h3>
-            <p>GitHub Pages serves <code>main</code>. The old white “Basic Chatbot” page lives there until this design is merged.</p>
+            <p>GitHub Pages serves <code>main</code>. After merging, hard-refresh the site (Ctrl+Shift+R).</p>
           </article>
           <article class="step">
             <p class="kicker">02</p>
             <h3>Pages settings</h3>
-            <p>Settings → Pages → Deploy from branch <code>main</code> → folder <code>/</code>. Hard-refresh the site (Ctrl+Shift+R).</p>
+            <p>Settings → Pages → Deploy from branch <code>main</code> → folder <code>/</code>.</p>
           </article>
           <article class="step">
             <p class="kicker">03</p>
             <h3>Talk to it</h3>
-            <p>You should see a dark page titled Lumen. Type <code>hi</code> — a green user bubble and a grey assistant bubble appear.</p>
+            <p>Type <code>hi</code> — a green user bubble and a grey assistant bubble appear.</p>
           </article>
         </div>
       </section>
@@ -869,6 +869,9 @@ optional: FastAPI POST /api/chat → same engine + LLM fallback
 
   if (!transcript || !form || !input) return;
 
+  const history = [];
+  let mode = "on-device";
+
   function renderMarkdownLite(text) {
     const escaped = text
       .replaceAll("&", "&amp;")
@@ -918,19 +921,25 @@ optional: FastAPI POST /api/chat → same engine + LLM fallback
   }
 
   async function detectApi() {
+    const host = (typeof location !== "undefined" && location.hostname) || "";
+    if (host.endsWith("github.io")) {
+      mode = "on-device";
+      if (status) status.textContent = "On-device · replies in this tab";
+      return;
+    }
     try {
       const res = await fetch("api/health", { headers: { Accept: "application/json" } });
       const data = await res.json();
       if (res.ok && data && data.ok) {
         mode = "api";
-        status.textContent = "Live API · FastAPI";
+        if (status) status.textContent = "Live API · FastAPI";
         return;
       }
     } catch {
-      /* GitHub Pages / static host — use the in-browser brain */
+      /* static host — use the in-browser brain */
     }
     mode = "on-device";
-    status.textContent = "On-device · replies in this tab";
+    if (status) status.textContent = "On-device · replies in this tab";
   }
 
   async function ask(message) {
@@ -944,7 +953,6 @@ optional: FastAPI POST /api/chat → same engine + LLM fallback
       return res.json();
     }
     if (!window.LumenEngine) throw new Error("engine");
-    if (!window.LumenEngine) throw new Error("engine");
     return window.LumenEngine.replyFor(message, sessionId);
   }
 
@@ -953,25 +961,31 @@ optional: FastAPI POST /api/chat → same engine + LLM fallback
     if (!message) return;
     input.value = "";
     addMessage("user", message);
-    history.push({ role: "user", content: message });
-    typing(true);
     try {
+      history.push({ role: "user", content: message });
+      typing(true);
       const result = await ask(message);
       typing(false);
-      const reply = result && result.reply ? result.reply : "I heard you — try asking for help, a conversion, or an interview tip.";
+      const reply =
+        result && result.reply
+          ? result.reply
+          : "I heard you — try asking for help, a conversion, or an interview tip.";
       addMessage("assistant", reply);
       history.push({ role: "assistant", content: reply });
       if (history.length > 24) history.splice(0, history.length - 24);
       setChips((result && result.suggestions) || ["What can you do?", "hi", "12 * 8"]);
     } catch (err) {
       typing(false);
-      const fallback =
-        (window.LumenEngine && window.LumenEngine.replyFor(message, sessionId)) || {
-          reply: "Something glitched. Try “hi” or “what can you do?”",
-          suggestions: ["hi", "What can you do?"],
-        };
-      addMessage("assistant", fallback.reply);
-      setChips(fallback.suggestions || []);
+      let reply = "Something glitched. Try “hi” or “what can you do?”";
+      try {
+        if (window.LumenEngine) {
+          reply = window.LumenEngine.replyFor(message, sessionId).reply;
+        }
+      } catch {
+        /* keep fallback */
+      }
+      addMessage("assistant", reply);
+      setChips(["What can you do?", "Give me an interview tip", "How were you built?"]);
     }
   }
 
