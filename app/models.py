@@ -1,0 +1,22 @@
+from typing import Literal
+
+from pydantic import BaseModel, Field
+
+
+class ChatMessage(BaseModel):
+    role: Literal["user", "assistant", "system"]
+    content: str = Field(min_length=1, max_length=8000)
+
+
+class ChatRequest(BaseModel):
+    message: str = Field(min_length=1, max_length=4000)
+    history: list[ChatMessage] = Field(default_factory=list, max_length=40)
+    session_id: str | None = None
+
+
+class ChatResponse(BaseModel):
+    reply: str
+    intent: str
+    source: Literal["engine", "llm", "hybrid"]
+    suggestions: list[str] = Field(default_factory=list)
+    session_id: str

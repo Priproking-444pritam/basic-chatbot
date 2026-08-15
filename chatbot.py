@@ -1,26 +1,39 @@
-# chatbot.py
+#!/usr/bin/env python3
+"""Lumen CLI — same engine as the website, in your terminal."""
 
-def chatbot_response(user_input):
-    user_input = user_input.lower()
+from __future__ import annotations
 
-    if "hello" in user_input or "hi" in user_input:
-        return "Hello there!"
-    elif "how are you" in user_input:
-        return "I'm just a program, but I'm doing great!"
-    elif "bye" in user_input:
-        return "Goodbye! Have a nice day!"
-    else:
-        return "I'm sorry, I don't understand that."
+import argparse
+import sys
 
-def main():
-    print("Welcome to Basic Chatbot! (type 'bye' to exit)")
+from app.engine import reply_for
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Lumen conversational assistant")
+    parser.add_argument("message", nargs="*", help="Optional one-shot message")
+    args = parser.parse_args()
+
+    session_id = "cli"
+    if args.message:
+        result = reply_for(" ".join(args.message), session_id=session_id)
+        print(result.reply.replace("**", ""))
+        return 0
+
+    print("Lumen  ·  type 'bye' to leave, 'help' for capabilities\n")
     while True:
-        user_input = input("You: ")
-        if user_input.lower() == "bye":
-            print("Bot:", chatbot_response(user_input))
-            break
-        response = chatbot_response(user_input)
-        print("Bot:", response)
+        try:
+            user_input = input("You: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\nLumen: Take care.")
+            return 0
+        if not user_input:
+            continue
+        result = reply_for(user_input, session_id=session_id)
+        print(f"Lumen: {result.reply.replace('**', '')}\n")
+        if result.intent == "farewell":
+            return 0
+
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
