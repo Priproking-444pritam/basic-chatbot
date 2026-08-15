@@ -23,7 +23,7 @@ Lumen is the smallest honest version of that.
 
 | Capability | How |
 | --- | --- |
-| Live website + chat | Static `index.html` + `assets/engine.js` |
+| Live website + chat | Single `index.html` with inlined UI + engine (GitHub Pages) |
 | Math & unit conversion | Safe expression walker (Python) / constrained eval (JS) |
 | Time, notes, interview & study coaching | Scored intents |
 | Optional LLM | FastAPI adapter to any OpenAI-compatible API |
@@ -49,17 +49,14 @@ docker compose up --build
 
 ## Create the website
 
-You do **not** need a backend to put this on the internet.
+GitHub Pages always serves the **`main` branch**, not a pull-request branch. If you still see a white page that says “Welcome to the Basic Chatbot!” and only prints `You: hi`, Pages is still on the old file. Merge this upgrade into `main`, wait a minute, then hard-refresh (`Ctrl+Shift+R` / `Cmd+Shift+R`).
 
-1. Push this repository to GitHub (already done if you’re looking at it).
-2. **Settings → Pages → Build and deployment**
-   - Source: **Deploy from a branch**
-   - Branch: `main` / root (`/`)
-3. Wait a minute. The site is:
-   `https://<your-username>.github.io/basic-chatbot/`
-4. Optional: add a custom domain in the same Pages settings.
+You should see a **dark** page named **Lumen**. Type `hi` — a green bubble (you) and a grey bubble (Lumen) appear. CSS and the chatbot brain are inlined in `index.html`, so the site cannot “forget” its styling.
 
-That’s the version you send in applications. It loads fast, looks finished, and chat works on a phone.
+1. Merge onto `main`.
+2. **Settings → Pages → Deploy from a branch** → `main` → folder `/`
+3. Open `https://<your-username>.github.io/basic-chatbot/`
+4. Optional: custom domain in the same Pages settings.
 
 ### Optional: hosted API + LLM
 

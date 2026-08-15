@@ -3,26 +3,528 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Lumen — a private assistant you can actually ship</title>
-    <meta
-      name="description"
-      content="Lumen is a privacy-first conversational assistant with a production UI, a testable intent engine, and an optional FastAPI + LLM backend. Deploy the site on GitHub Pages in minutes."
-    />
+    <title>Lumen — chat that actually replies</title>
+    <meta name="description" content="Lumen is a privacy-first chatbot that runs in the browser. Type a message and it replies — no API key required." />
     <meta property="og:title" content="Lumen" />
-    <meta
-      property="og:description"
-      content="A modern chatbot portfolio piece: on-device engine, beautiful UI, FastAPI, Docker, tests."
-    />
-    <meta property="og:type" content="website" />
+    <meta property="og:description" content="A modern chatbot: real replies, real UI, GitHub Pages ready." />
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="assets/styles.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
+    <style>
+:root {
+  --bg: #07080c;
+  --bg-2: #0d0f16;
+  --surface: #12141c;
+  --surface-2: #181b26;
+  --line: rgba(244, 241, 234, 0.08);
+  --text: #f4f1ea;
+  --muted: #9a978f;
+  --accent: #c8f542;
+  --accent-ink: #14160c;
+  --violet: #8ea2ff;
+  --warm: #ff9b73;
+  --danger: #ff6b6b;
+  --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  --radius: 28px;
+  --font: "Manrope", system-ui, sans-serif;
+  --display: "Fraunces", Georgia, serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(900px 500px at 10% -10%, rgba(200, 245, 66, 0.12), transparent 55%),
+    radial-gradient(700px 400px at 90% 0%, rgba(142, 162, 255, 0.14), transparent 50%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='.045'/%3E%3C/svg%3E");
+  z-index: 0;
+}
+
+a {
+  color: inherit;
+}
+
+.skip {
+  position: absolute;
+  left: -999px;
+  top: 8px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 8px 12px;
+  border-radius: 8px;
+  z-index: 20;
+}
+
+.skip:focus {
+  left: 8px;
+}
+
+.wrap {
+  position: relative;
+  z-index: 1;
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 0 8px;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.brand img {
+  width: 28px;
+  height: 28px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 22px;
+  align-items: center;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.nav-links a {
+  text-decoration: none;
+}
+
+.nav-links a:hover {
+  color: var(--text);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 12px 18px;
+  transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:focus-visible,
+input:focus-visible,
+.chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--line);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 36px;
+  align-items: center;
+  padding: 48px 0 32px;
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.kicker span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 6px rgba(200, 245, 66, 0.12);
+}
+
+h1 {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(2.4rem, 5vw, 4.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  margin: 14px 0 16px;
+}
+
+.lede {
+  font-size: 1.08rem;
+  color: var(--muted);
+  max-width: 52ch;
+  margin: 0 0 28px;
+}
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 22px;
+  margin-top: 28px;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.hero-meta strong {
+  display: block;
+  color: var(--text);
+  font-size: 1.05rem;
+}
+
+.chat-shell {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  min-height: 560px;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(7, 8, 12, 0.35);
+}
+
+.chat-head h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.chat-head p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.status {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+  background: rgba(200, 245, 66, 0.08);
+  border: 1px solid rgba(200, 245, 66, 0.18);
+  padding: 6px 10px;
+  border-radius: 999px;
+}
+
+.transcript {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 340px;
+  max-height: 420px;
+}
+
+.msg {
+  max-width: 92%;
+  padding: 12px 14px;
+  border-radius: 18px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-size: 0.95rem;
+}
+
+.msg.user {
+  align-self: flex-end;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-bottom-right-radius: 6px;
+}
+
+.msg.assistant {
+  align-self: flex-start;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-bottom-left-radius: 6px;
+}
+
+.msg .meta {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.7rem;
+  opacity: 0.7;
+  font-family: var(--mono);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 18px 10px;
+}
+
+.chip {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.chip:hover {
+  border-color: rgba(200, 245, 66, 0.4);
+}
+
+.composer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  padding: 14px;
+  border-top: 1px solid var(--line);
+  background: var(--bg-2);
+}
+
+.composer input {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 12px 16px;
+  font: inherit;
+}
+
+.composer .btn {
+  padding-inline: 16px;
+}
+
+.section {
+  padding: 56px 0;
+}
+
+.section h2 {
+  font-family: var(--display);
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  letter-spacing: -0.03em;
+  margin: 0 0 10px;
+}
+
+.section .intro {
+  color: var(--muted);
+  max-width: 62ch;
+  margin: 0 0 28px;
+}
+
+.bento {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 22px;
+}
+
+.card.wide {
+  grid-column: span 3;
+}
+
+.card.tall {
+  grid-column: span 2;
+}
+
+.card h3 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+
+.card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.tag {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  color: var(--violet);
+  margin-bottom: 10px;
+}
+
+pre,
+code {
+  font-family: var(--mono);
+}
+
+.arch {
+  background: #0b0d13;
+  color: #d7e0c8;
+  border-radius: 18px;
+  padding: 18px;
+  overflow-x: auto;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  border: 1px solid var(--line);
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.step {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 22px;
+}
+
+.step n {
+  font-family: var(--mono);
+  color: var(--accent);
+}
+
+footer {
+  padding: 28px 0 48px;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--line);
+}
+
+.typing {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.typing i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  animation: bounce 1s infinite;
+}
+
+.typing i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 900px) {
+  .hero,
+  .steps {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .card.wide,
+  .card.tall,
+  .bento {
+    grid-template-columns: 1fr;
+  }
+
+  .card.wide,
+  .card.tall {
+    grid-column: span 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+    </style>
   </head>
   <body>
     <a class="skip" href="#live">Skip to live demo</a>
@@ -33,7 +535,7 @@
           Lumen
         </a>
         <nav class="nav-links" aria-label="Primary">
-          <a href="#live">Live demo</a>
+          <a href="#live">Live chat</a>
           <a href="#features">Features</a>
           <a href="#architecture">Architecture</a>
           <a href="#deploy">Deploy</a>
@@ -44,21 +546,20 @@
 
       <section class="hero">
         <div>
-          <p class="kicker"><span></span> Privacy-first · On-device · Interview-ready</p>
-          <h1>Software that talks back — without selling the conversation.</h1>
+          <p class="kicker"><span></span> Works in this tab · No API key</p>
+          <h1>A chatbot that answers you — not a form that echoes you.</h1>
           <p class="lede">
-            Lumen is a modern conversational product: a distinctive interface, a testable intent engine,
-            and an optional FastAPI layer for OpenAI-compatible models. Ship the website today. Add a
-            model when you need open-ended answers.
+            Type on the right. Lumen replies in this page: greetings, math, conversions,
+            interview prep, notes, and how the project is built. GitHub Pages hosts the whole thing.
           </p>
           <div class="cta-row">
-            <a class="btn btn-accent" href="#live">Try the live demo</a>
-            <a class="btn btn-ghost" href="#deploy">Create the website</a>
+            <a class="btn btn-accent" href="#live">Talk to Lumen</a>
+            <a class="btn btn-ghost" href="#deploy">How to publish</a>
           </div>
           <div class="hero-meta">
-            <div><strong>0 API keys</strong> to launch the site</div>
-            <div><strong>FastAPI + tests</strong> when you want a backend</div>
-            <div><strong>XSS-safe UI</strong> and accessible chat</div>
+            <div><strong>Replies locally</strong> every send</div>
+            <div><strong>Styled UI</strong> not default HTML</div>
+            <div><strong>Optional FastAPI</strong> when you want an LLM</div>
           </div>
         </div>
 
@@ -66,57 +567,51 @@
           <div class="chat-head">
             <div>
               <h2>Lumen</h2>
-              <p>Ask for math, conversions, interview prep, or how this is built.</p>
+              <p>Try “hi”, “12 * 8”, or “interview tip”.</p>
             </div>
             <div class="status" id="status">On-device</div>
           </div>
           <div id="transcript" class="transcript" role="log" aria-live="polite" aria-relevant="additions"></div>
           <div id="chips" class="chips" aria-label="Suggestions"></div>
           <form id="composer" class="composer">
-            <label class="visually-hidden" for="user-input" style="position:absolute;left:-9999px">Message</label>
-            <input id="user-input" name="message" autocomplete="off" placeholder="Ask Lumen anything practical…" maxlength="4000" />
+            <label for="user-input" style="position:absolute;left:-9999px">Message</label>
+            <input id="user-input" name="message" autocomplete="off" placeholder="Message Lumen…" maxlength="4000" />
             <button class="btn btn-accent" type="submit">Send</button>
           </form>
         </aside>
       </section>
 
       <section class="section" id="features">
-        <h2>Built for 2026, not a tutorial from 2014.</h2>
+        <h2>Not the old “You: hi” page.</h2>
         <p class="intro">
-          Keyword chatbots dump “I don’t understand” on every real question. Lumen is a small product:
-          reliable tools, honest limits, a shippable website, and a path to LLMs that doesn’t brick the demo.
+          The first GitHub Pages file only printed your text. This page is a real chat thread:
+          user bubble, assistant bubble, suggestion chips, and a brain that runs in JavaScript.
         </p>
         <div class="bento">
           <article class="card wide">
-            <span class="tag">01 · Product</span>
-            <h3>A site interviewers can click</h3>
-            <p>
-              GitHub Pages hosts the full experience. The JavaScript engine is a sibling of the Python
-              engine, so the demo never depends on a sleeping free-tier server.
-            </p>
+            <span class="tag">01 · Chat</span>
+            <h3>Every message gets a reply</h3>
+            <p>Greetings, math, unit conversion, time, notes, interview and study coaching — plus an honest fallback when it does not know.</p>
           </article>
           <article class="card wide">
-            <span class="tag">02 · Engine</span>
-            <h3>Intents you can unit test</h3>
-            <p>
-              Scored pattern matching plus safe math, unit conversion, session notes, interview coaching,
-              and crisis-safe wellbeing copy. No `eval()` of user code.
-            </p>
+            <span class="tag">02 · Site</span>
+            <h3>One HTML file, fully styled</h3>
+            <p>CSS and the chatbot engine are inlined so GitHub Pages cannot “lose” the design if an extra file fails to load.</p>
           </article>
           <article class="card tall">
             <span class="tag">03 · API</span>
-            <h3>FastAPI when you need it</h3>
-            <p>Health, capabilities, CORS, Pydantic validation, optional LLM adapter.</p>
+            <h3>FastAPI optional</h3>
+            <p>Health checks, validation, and an LLM adapter when you add a key.</p>
           </article>
           <article class="card tall">
             <span class="tag">04 · Trust</span>
             <h3>Privacy by default</h3>
-            <p>On-device first. Memory is per-session. LLM calls only if you set a key.</p>
+            <p>Messages stay in this tab unless you connect a backend.</p>
           </article>
           <article class="card tall">
             <span class="tag">05 · Craft</span>
-            <h3>UI that feels finished</h3>
-            <p>Typography, motion, chips, export, keyboard submit, reduced-motion support.</p>
+            <h3>Interview-ready</h3>
+            <p>Tests, Docker, CLI, and a README that explains the tradeoffs.</p>
           </article>
         </div>
         <p style="margin-top: 18px">
@@ -127,43 +622,392 @@
 
       <section class="section" id="architecture">
         <h2>Architecture you can defend in a loop.</h2>
-        <p class="intro">Client engine for the website. Server engine for production. Same behaviors, two runtimes.</p>
+        <p class="intro">The website is the product. The Python API is an upgrade path.</p>
         <pre class="arch" aria-label="Architecture diagram">
-browser  ──►  assets/engine.js   (GitHub Pages, zero ops)
-   │
-   └──►  POST /api/chat  ──►  app/engine.py  ──►  tools (math, units, time)
-                                   │
-                                   └── unknown + LLM_API_KEY ──► OpenAI-compatible API
+this page (index.html)
+  ├─ inlined CSS  →  dark UI, bubbles, chips
+  └─ inlined JS   →  intent engine replies in the tab
+
+optional: FastAPI POST /api/chat → same engine + LLM fallback
         </pre>
       </section>
 
       <section class="section" id="deploy">
-        <h2>Create the website in three moves.</h2>
+        <h2>Publish from the main branch.</h2>
         <div class="steps">
           <article class="step">
             <p class="kicker">01</p>
-            <h3>GitHub Pages</h3>
-            <p>Settings → Pages → Deploy from branch <code>main</code> → folder <code>/</code>. Your site is live at <code>https://&lt;user&gt;.github.io/basic-chatbot/</code>.</p>
+            <h3>Merge onto main</h3>
+            <p>GitHub Pages serves <code>main</code>. The old white “Basic Chatbot” page lives there until this design is merged.</p>
           </article>
           <article class="step">
             <p class="kicker">02</p>
-            <h3>Optional API</h3>
-            <p><code>docker compose up --build</code> or <code>uvicorn app.main:app --reload</code>. Set <code>LLM_API_KEY</code> only if you want open-ended replies.</p>
+            <h3>Pages settings</h3>
+            <p>Settings → Pages → Deploy from branch <code>main</code> → folder <code>/</code>. Hard-refresh the site (Ctrl+Shift+R).</p>
           </article>
           <article class="step">
             <p class="kicker">03</p>
-            <h3>Custom domain</h3>
-            <p>Add an <code>A</code>/<code>CNAME</code> in Pages. Keep the static demo even if the API is down — that’s the professional move.</p>
+            <h3>Talk to it</h3>
+            <p>You should see a dark page titled Lumen. Type <code>hi</code> — a green user bubble and a grey assistant bubble appear.</p>
           </article>
         </div>
       </section>
 
       <footer>
-        <div>Lumen · evolved from a basic chatbot into a shippable assistant.</div>
-        <div>MIT License · Built to be shown, not just cloned.</div>
+        <div>Lumen · a chatbot that actually replies.</div>
+        <div>MIT License</div>
       </footer>
     </div>
-    <script src="assets/engine.js"></script>
-    <script src="assets/app.js"></script>
+    <script>
+(() => {
+  const notesBySession = new Map();
+
+  const INTENTS = [
+    ["greeting", /\b(hi|hello|hey|yo|good (morning|afternoon|evening))\b/i, 10],
+    ["farewell", /\b(bye|goodbye|see you|later|exit|quit)\b/i, 10],
+    ["thanks", /\b(thanks|thank you|appreciate|thx)\b/i, 8],
+    ["identity", /\b(who are you|your name|what are you|about you)\b/i, 12],
+    ["help", /\b(help|what can you do|capabilities|commands|features)\b/i, 12],
+    ["time", /\b(time|date|today|day is it|clock)\b/i, 9],
+    ["math", /[\d]+\s*[+\-*/^%]\s*[\d]+|calculate|compute|what(?:'s| is)\s+\d/i, 11],
+    ["convert", /\bconvert\b|\d+\s*(km|mi|kg|lb|c|f|celsius|fahrenheit)\b/i, 11],
+    ["interview", /\b(interview|resume|star method|behavioral|hiring)\b/i, 10],
+    ["study", /\b(study|learn|focus|pomodoro|revise|exam)\b/i, 9],
+    ["wellbeing", /\b(anxious|stressed|overwhelmed|sad|lonely|burnout)\b/i, 12],
+    ["privacy", /\b(privacy|data|store|remember me|tracking)\b/i, 9],
+    ["joke", /\b(joke|funny|make me laugh)\b/i, 8],
+    ["note_add", /\b(remember|note|save this|add to notes)\b/i, 10],
+    ["note_list", /\b(notes|what did i save|show notes)\b/i, 9],
+    ["how_built", /\b(how (are you|were you) (built|made)|architecture|tech stack)\b/i, 11],
+  ];
+
+  const HELP = [
+    "What can you do?",
+    "Convert 72 F to C",
+    "Interview tip for behavioral questions",
+    "What time is it?",
+  ];
+
+  function classify(text) {
+    let best = "unknown";
+    let score = 0;
+    for (const [name, pattern, weight] of INTENTS) {
+      if (pattern.test(text) && weight > score) {
+        best = name;
+        score = weight;
+      }
+    }
+    return best;
+  }
+
+  function safeEval(expr) {
+    const cleaned = expr.replace(/\^/g, "**").replace(/[^0-9.+\-*/()%\s]/g, "");
+    if (!cleaned.trim()) throw new Error("empty");
+    // eslint-disable-next-line no-new-func
+    const fn = new Function(`"use strict"; return (${cleaned});`);
+    const value = fn();
+    if (typeof value !== "number" || Number.isNaN(value)) throw new Error("nan");
+    return value;
+  }
+
+  const LENGTH = { mm: 0.001, cm: 0.01, m: 1, km: 1000, in: 0.0254, inch: 0.0254, ft: 0.3048, mi: 1609.344 };
+  const MASS = { mg: 0.001, g: 1, kg: 1000, lb: 453.59237, oz: 28.349523125 };
+
+  function toC(v, u) {
+    if (["c", "celsius"].includes(u)) return v;
+    if (["f", "fahrenheit"].includes(u)) return ((v - 32) * 5) / 9;
+    if (["k", "kelvin"].includes(u)) return v - 273.15;
+    throw new Error("temp");
+  }
+
+  function fromC(v, u) {
+    if (["c", "celsius"].includes(u)) return v;
+    if (["f", "fahrenheit"].includes(u)) return (v * 9) / 5 + 32;
+    if (["k", "kelvin"].includes(u)) return v + 273.15;
+    throw new Error("temp");
+  }
+
+  function convert(value, src, dest) {
+    const s = src.toLowerCase();
+    const d = dest.toLowerCase();
+    const temps = ["c", "f", "k", "celsius", "fahrenheit", "kelvin"];
+    if (temps.includes(s) && temps.includes(d)) return fromC(toC(value, s), d);
+    if (LENGTH[s] && LENGTH[d]) return (value * LENGTH[s]) / LENGTH[d];
+    if (MASS[s] && MASS[d]) return (value * MASS[s]) / MASS[d];
+    throw new Error(`Cannot convert ${src} to ${dest}`);
+  }
+
+  function replyFor(message, sessionId = "web") {
+    const text = String(message || "").trim();
+    if (!text) {
+      return { reply: "Say something and I’ll meet you there.", intent: "empty", suggestions: HELP.slice(0, 3), source: "engine" };
+    }
+    const intent = classify(text);
+    const notes = notesBySession.get(sessionId) || [];
+    notesBySession.set(sessionId, notes);
+
+    const handlers = {
+      greeting: () => ({
+        reply:
+          "Hey — I’m Lumen. I can help with math, conversions, study focus, interview prep, and quick notes. What’s on your mind?",
+        suggestions: ["What can you do?", "Give me an interview tip", "12 * 17.5"],
+      }),
+      farewell: () => ({
+        reply: "Take care. I’ll be here when you need a second brain.",
+        suggestions: ["Start a new topic"],
+      }),
+      thanks: () => ({ reply: "Anytime. Want to keep going?", suggestions: ["Show my notes"] }),
+      identity: () => ({
+        reply:
+          "I’m Lumen, a conversational assistant designed to run in the browser or on a small FastAPI backend. I start on-device so you can ship a real demo without an API key.",
+        suggestions: ["How were you built?", "What about privacy?"],
+      }),
+      help: () => ({
+        reply:
+          "Here’s what I’m good at right now:\n• Math and unit conversions\n• Time and date\n• Session notes (remember this…)\n• Interview and study coaching\n• Honest answers about privacy and how I’m built",
+        suggestions: HELP,
+      }),
+      time: () => {
+        const now = new Date();
+        return {
+          reply: `It’s ${now.toLocaleString(undefined, { weekday: "long", dateStyle: "long", timeStyle: "short" })}.`,
+          suggestions: ["What can you do?"],
+        };
+      },
+      math: () => {
+        try {
+          const expr = text.replace(/[^0-9.+\-*/^()%\s]/g, " ").replace(/\s+/g, " ").trim();
+          const value = safeEval(expr);
+          const pretty = Number.isInteger(value) ? String(value) : String(Number(value.toPrecision(6)));
+          return { reply: `${expr} = **${pretty}**`, suggestions: ["Convert 5 km to mi"] };
+        } catch {
+          return { reply: "I can evaluate expressions like `12 * (4 + 3)` or `2^10`.", suggestions: ["2^10"] };
+        }
+      },
+      convert: () => {
+        const match = text.replaceAll("°", "").match(/(?:convert\s+)?(-?\d+(?:\.\d+)?)\s*([a-z]+)\s+(?:to|in)\s+([a-z]+)/i);
+        if (!match) return { reply: "Try: convert 72 F to C, or 5 km to mi.", suggestions: ["72 F to C"] };
+        try {
+          const out = convert(Number(match[1]), match[2], match[3]);
+          return { reply: `${match[1]} ${match[2]} → **${Number(out.toPrecision(4))} ${match[3]}**`, suggestions: ["100 km to mi"] };
+        } catch (err) {
+          return { reply: String(err.message || err), suggestions: ["72 F to C"] };
+        }
+      },
+      interview: () => ({
+        reply:
+          "For behavioral interviews, use STAR and keep it tight:\n1. **Situation** — one sentence of context\n2. **Task** — what you owned\n3. **Action** — what *you* did\n4. **Result** — a number if you have one\n\nPractice: “Tell me about a time you shipped under ambiguity.”",
+        suggestions: ["How were you built?", "Study focus tip"],
+      }),
+      study: () => ({
+        reply:
+          "Use a 50/10 focus block: 50 minutes on one outcome, 10 minutes away from the screen. Write the outcome as a verb (“finish the API tests”), not a vibe.",
+        suggestions: ["Interview tip"],
+      }),
+      wellbeing: () => ({
+        reply:
+          "That’s heavy, and you don’t have to carry it alone. I’m a software assistant, not a clinician. If you’re in crisis, contact local emergency services. In the US, call or text **988**.",
+        suggestions: ["Study focus tip"],
+      }),
+      privacy: () => ({
+        reply:
+          "Default mode is on-device: messages stay in this browser tab unless you deploy the API. Optional LLM keys are a switch you control — not a requirement.",
+        suggestions: ["How were you built?"],
+      }),
+      joke: () => ({
+        reply: "Why did the frontend refuse to argue with the API? It didn’t want a cross-origin relationship.",
+        suggestions: ["Interview tip"],
+      }),
+      note_add: () => {
+        const payload = text
+          .replace(/^(please\s+)?(remember|note|save this|add to notes)\s*(that\s+|this\s*:?\s*)?/i, "")
+          .replace(/[ .]+$/, "");
+        if (!payload) return { reply: "Tell me what to remember. Example: remember this: ship the README.", suggestions: [] };
+        notes.push(payload);
+        return { reply: `Saved (${notes.length}): ${payload}`, suggestions: ["Show my notes"] };
+      },
+      note_list: () => {
+        if (!notes.length) return { reply: "No notes in this session yet. Say “remember this: …” to add one.", suggestions: [] };
+        return { reply: `Session notes:\n${notes.map((n, i) => `${i + 1}. ${n}`).join("\n")}`, suggestions: [] };
+      },
+      how_built: () => ({
+        reply:
+          "Lumen is a hybrid assistant:\n• A scored intent engine for reliable, testable answers\n• Safe math and unit conversion\n• FastAPI for optional LLM completion\n• This page runs the same engine in JavaScript so GitHub Pages works with zero servers",
+        suggestions: ["What about privacy?"],
+      }),
+    };
+
+    const run = handlers[intent] || (() => ({
+      reply: `I heard “${text.slice(0, 80)}.” I don’t improvise long answers unless an LLM key is connected. I can help with math, conversions, notes, and interview prep.`,
+      suggestions: HELP,
+    }));
+    const out = run();
+    return { reply: out.reply, intent: handlers[intent] ? intent : "unknown", suggestions: out.suggestions || [], source: "engine" };
+  }
+
+  window.LumenEngine = { replyFor, classify };
+})();
+
+    </script>
+    <script>
+(() => {
+  const transcript = document.getElementById("transcript");
+  const form = document.getElementById("composer");
+  const input = document.getElementById("user-input");
+  const chips = document.getElementById("chips");
+  const status = document.getElementById("status");
+  const SESSION_KEY = "lumen-session-id";
+
+  const sessionId =
+    localStorage.getItem(SESSION_KEY) ||
+    (crypto.randomUUID ? crypto.randomUUID() : `lumen-${Date.now()}`);
+  try {
+    localStorage.setItem(SESSION_KEY, sessionId);
+  } catch {
+    /* private mode */
+  }
+
+  if (!transcript || !form || !input) return;
+
+  function renderMarkdownLite(text) {
+    const escaped = text
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;");
+    return escaped
+      .replaceAll(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replaceAll(/`(.+?)`/g, "<code>$1</code>");
+  }
+
+  function addMessage(role, content) {
+    const el = document.createElement("div");
+    el.className = `msg ${role}`;
+    el.setAttribute("role", "listitem");
+    const meta = document.createElement("span");
+    meta.className = "meta";
+    meta.textContent = role === "user" ? "You" : "Lumen";
+    const body = document.createElement("div");
+    body.innerHTML = renderMarkdownLite(content);
+    el.append(meta, body);
+    transcript.appendChild(el);
+    transcript.scrollTop = transcript.scrollHeight;
+  }
+
+  function setChips(items) {
+    chips.replaceChildren();
+    for (const label of items) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "chip";
+      btn.textContent = label;
+      btn.addEventListener("click", () => send(label));
+      chips.appendChild(btn);
+    }
+  }
+
+  function typing(on) {
+    const existing = document.getElementById("typing");
+    if (existing) existing.remove();
+    if (!on) return;
+    const el = document.createElement("div");
+    el.id = "typing";
+    el.className = "msg assistant";
+    el.innerHTML = `<span class="meta">Lumen</span><span class="typing" aria-label="Thinking"><i></i><i></i><i></i></span>`;
+    transcript.appendChild(el);
+    transcript.scrollTop = transcript.scrollHeight;
+  }
+
+  async function detectApi() {
+    try {
+      const res = await fetch("api/health", { headers: { Accept: "application/json" } });
+      const data = await res.json();
+      if (res.ok && data && data.ok) {
+        mode = "api";
+        status.textContent = "Live API · FastAPI";
+        return;
+      }
+    } catch {
+      /* GitHub Pages / static host — use the in-browser brain */
+    }
+    mode = "on-device";
+    status.textContent = "On-device · replies in this tab";
+  }
+
+  async function ask(message) {
+    if (mode === "api") {
+      const res = await fetch("api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, session_id: sessionId, history }),
+      });
+      if (!res.ok) throw new Error("api");
+      return res.json();
+    }
+    if (!window.LumenEngine) throw new Error("engine");
+    if (!window.LumenEngine) throw new Error("engine");
+    return window.LumenEngine.replyFor(message, sessionId);
+  }
+
+  async function send(raw) {
+    const message = (raw ?? input.value).trim();
+    if (!message) return;
+    input.value = "";
+    addMessage("user", message);
+    history.push({ role: "user", content: message });
+    typing(true);
+    try {
+      const result = await ask(message);
+      typing(false);
+      const reply = result && result.reply ? result.reply : "I heard you — try asking for help, a conversion, or an interview tip.";
+      addMessage("assistant", reply);
+      history.push({ role: "assistant", content: reply });
+      if (history.length > 24) history.splice(0, history.length - 24);
+      setChips((result && result.suggestions) || ["What can you do?", "hi", "12 * 8"]);
+    } catch (err) {
+      typing(false);
+      const fallback =
+        (window.LumenEngine && window.LumenEngine.replyFor(message, sessionId)) || {
+          reply: "Something glitched. Try “hi” or “what can you do?”",
+          suggestions: ["hi", "What can you do?"],
+        };
+      addMessage("assistant", fallback.reply);
+      setChips(fallback.suggestions || []);
+    }
+  }
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    send();
+  });
+
+  document.getElementById("clear-chat")?.addEventListener("click", () => {
+    transcript.replaceChildren();
+    history.length = 0;
+    addMessage("assistant", "Fresh thread. What should we work on?");
+    setChips(["What can you do?", "How were you built?", "72 F to C"]);
+  });
+
+  document.getElementById("export-chat")?.addEventListener("click", () => {
+    const blob = new Blob(
+      [history.map((m) => `${m.role}: ${m.content}`).join("\n\n")],
+      { type: "text/plain" },
+    );
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "lumen-transcript.txt";
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  addMessage(
+    "assistant",
+    "Welcome. I’m Lumen — a private assistant that runs in this page. Ask for help, try the chips, or inspect how I’m built.",
+  );
+  setChips(["What can you do?", "Give me an interview tip", "How were you built?"]);
+  detectApi();
+})();
+
+    </script>
   </body>
 </html>
